@@ -1,7 +1,7 @@
 ![wg-help_logo](https://github.com/suuhm/wireguard-help/assets/11504990/047ca3f0-8437-4b76-aa0f-7c33eee1c2cd)
 
-
 WireGuard helper script for building complex topologies (HUB/SPOKES) and using WireGuard with TCP stack
+
 
 ## Features
 
@@ -85,12 +85,22 @@ Set up UDP2RAW socket for using TCP on server and clientside
 # Use the wg_help_udp2raw.bat and optional wg_help_speederv2.bat
 ```
 
+## Creating different toplogies:
+
+### Site Gateway as a Spoke:
+
+![sgas](https://www.procustodibus.com/images/blog/multi-hop-wireguard/site-gateway-spoke.svg)
+
+source: procustodibus.com
+
+1. Create Server with `./wireguard-help.sh server --add-config --start-wg `
+2. Follow instructions in script... todo 
 
 
 ## Connecting wireguard with wg-help-win.bat
 
-You need to install first the windows version and run the batch file as Admin on Windows:
-
+> [!NOTE]
+> You need to install first the windows WireGuard version and run the batch file as Admin on Windows:
 
 ![wg-help-win](https://github.com/suuhm/wireguard-help/assets/11504990/b929e3c3-3d8e-44dc-9774-bb61ae0064a3)
 
@@ -99,5 +109,5 @@ You need to install first the windows version and run the batch file as Admin on
 ## All rights reserved 2023 (c) suuhm
 
 
-
-## Let me know if you find some bugs and feature wishes and post an issue!
+> [!IMPORTANT]
+> Let me know if you find some bugs and feature wishes and post an issue!
