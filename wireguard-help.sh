@@ -28,12 +28,16 @@
 # GLOBAL VAR SERVER DATA
 #
 LPORT=51820
+[ ! -f /etc/wireguard/.LPORT ] && mkdir -p /etc/wireguard 2>/dev/null && echo $LPORT > /etc/wireguard/.LPORT \
+                               || LPORT=$(cat /etc/wireguard/.LPORT)
 IPADDR="10.1.1.1"
 SN=24
 IPV6="fdfc:cccc:dddd:ffff::/64"
 # /24 Scope only yet!
 # MISC
-IPEXT=$(curl -s ifconfig.co)
+IPEXT=$(curl -s -4 ifconfig.co)
+[ ! -f /etc/wireguard/.IPEXT ] && mkdir -p /etc/wireguard 2>/dev/null && echo $IPEXT > /etc/wireguard/.IPEXT \
+                               || IPEXT=$(cat /etc/wireguard/.IPEXT)
 PORTEXT=443 #maybe useful for fw bypassing
 NDEV=$(ip r | grep defa | sed 's/.*dev\ \([^ ]*\).*/\1/g')
 [ ! -f /etc/wireguard/.SCOPE ] && mkdir -p /etc/wireguard 2>/dev/null && echo $IPADDR > /etc/wireguard/.SCOPE
@@ -53,10 +57,10 @@ echo "   ▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒�
 
 _server_conf() {
 
-    echo; read -p "[?] Please enter your IPS Provider IP [$IPEXT] " IP_IN
-    [ -z $IP_IN ] && IPEXT=$IPEXT || IPEXT=$IP_IN
+    echo; read -p "[?] Please enter your ISP Provider IP [$IPEXT] " IP_IN
+    [ -z $IP_IN ] && IPEXT=$IPEXT || IPEXT=$IP_IN;echo $IPEXT > /etc/wireguard/.IPEXT
     echo; read -p "[?] Please enter your ListenPort [$LPORT] " PORT_IN
-    [ -z $PORT_IN ] && LPORT=$LPORT || LPORT=$PORT_IN
+    [ -z $PORT_IN ] && LPORT=$LPORT || LPORT=$PORT_IN;echo $LPORT > /etc/wireguard/.LPORT
 
     #until _topology_mode; do : ; done
     while [ ! $? -eq 1 ]; do
@@ -110,9 +114,7 @@ EOG
     iptables -A INPUT -p udp --dport $LPORT -j ACCEPT
     
     echo; read -p "[?] Starting wireguard Host? [Y/N] " YN ;echo
-    [ "$YN" == "N" ] && exit 0;
-
-    _run_wg
+    [ ! "$YN" == "Y" ] && exit 0 || _run_wg
 
 }
 
