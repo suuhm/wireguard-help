@@ -30,7 +30,7 @@
 LPORT=51820
 [ ! -f /etc/wireguard/.LPORT ] && mkdir -p /etc/wireguard 2>/dev/null && echo $LPORT > /etc/wireguard/.LPORT \
                                || LPORT=$(cat /etc/wireguard/.LPORT)
-IPADDR="10.1.1.1"
+IPADDR="10.11.12.1"
 SN=24
 IPV6="fdfc:cccc:dddd:ffff::/64"
 # /24 Scope only yet!
@@ -61,6 +61,8 @@ _server_conf() {
     [ -z $IP_IN ] && IPEXT=$IPEXT || IPEXT=$IP_IN;echo $IPEXT > /etc/wireguard/.IPEXT
     echo; read -p "[?] Please enter your ListenPort [$LPORT] " PORT_IN
     [ -z $PORT_IN ] && LPORT=$LPORT || LPORT=$PORT_IN;echo $LPORT > /etc/wireguard/.LPORT
+    echo; read -p "[?] Please enter Port for NAT Mapping (if not shure press simply enter) [$LPORT] " NATPORT_IN
+    [ -z $NATPORT_IN ] && PORTEXT=$LPORT || PORTEXT=$NATPORT_IN;echo $PORTEXT > /etc/wireguard/.PORTEXT
 
     #until _topology_mode; do : ; done
     while [ ! $? -eq 1 ]; do
@@ -93,7 +95,7 @@ Address = $IPADDR/$SN
 #
 Address = $IPV6
 ListenPort = $LPORT
-#SaveConfig = true
+SaveConfig = true
 
 PreUp = sysctl -w net.ipv4.ip_forward=1
 PostDown = sysctl -w net.ipv4.ip_forward=1
@@ -160,7 +162,7 @@ $CPOSTDOW_RULES
 
 [Peer]
 PublicKey = $(cat pub-serv.key)
-Endpoint = $IPEXT:$LPORT
+Endpoint = $IPEXT:$PORTEXT
 $ALLOWED_IPS
 PersistentKeepalive = 25
 EOG
@@ -243,11 +245,15 @@ case $TINPUT in
         # ROUTE OVER V_NET OR ALL ::0/0
         #
         PREUP_RULES="#NOPOSTUP NEDDED?"
+        # Only route all to intern network for lanparty mode
+        # Else if inet traffic needed uncomment:
+        #PREUP_RULES="PostUp = iptables -A FORWARD -i wire0 -j ACCEPT; iptables -t nat -A POSTROUTING -o $NDEV -j MASQUERADE; ip6tables -A FORWARD -i wire0 -j ACCEPT; ip6tables -t nat -A POSTROUTING -o $NDEV -j MASQUERADE; iptables -A FORWARD -o %i -j ACCEPT"
+        #POSTDOWN_RULES="PostDown = iptables -D FORWARD -i wire0 -j ACCEPT; iptables -t nat -D POSTROUTING -o $NDEV -j MASQUERADE; ip6tables -D FORWARD -i wire0 -j ACCEPT; ip6tables -t nat -D POSTROUTING -o $NDEV -j MASQUERADE; iptables -D FORWARD -o %i -j ACCEPT"
         ;;
 
     3)
-        # DEFAULT PEER TO PEER:
-        # ---------------------
+        # DEFAULT PEER TO WEB:
+        # --------------------
         # ROUTE ALL OVER HUB
         # EP 1 ===> HUB ===> (WWW)
         # 
@@ -387,8 +393,8 @@ _setup_udptunnel() {
         #wireguard_client-->udpspeeder_client L:50001-->udp2raw_client L:50002---(WWW)--->udp2raw_server 0:51822-->udpspeeder_server 0:51821 -->wireguard_server L:51820
         #
 
-        echo; read -p "[?] Please enter your IPS Provider IP: " IP_IN ;echo
-        echo; read -p "[?] Please enter your IPS Provider Port: " PORT_I ;echo
+        echo; read -p "[?] Please enter your ISP Provider IP: " IP_IN ;echo
+        echo; read -p "[?] Please enter your ISP Provider Port: " PORT_I ;echo
 
         echo -e "\n[+] Starting UDPTunnel for clientside:\n"
         udp2raw -c -l 0.0.0.0:50001 -r $IP_IN:$PORT_I -k $PSKKEY -a >/var/log/udp2raw.log 2>&1 &
