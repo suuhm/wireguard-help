@@ -7,22 +7,31 @@ REM
 REM   (c) 2023 by suuhm
 REM -----------------------
 
+:: Check for exec as admin
+net session >nul 2>&1
+if not %errorlevel% == 0 (
+    echo [!!] You need to run this script /w admin rights.
+    echo exit - %~dp0wg-help_config.ini 
+    pause
+    exit /b
+)
+
 REM Default variables
-set "wgpath=C:\Program Files\WireGuard\wireguard.exe"
-set "confPath=C:\wg0.conf"
+set "wgpath=%ProgramFiles%\WireGuard\wireguard.exe"
+set "confPath=%tmp%\wg0.conf"
 set "device=wg0"
 
 REM Check if the ini file exists, if not, create it
-if not exist wg-help_config.ini (
-    echo [Settings]>wg-help_config.ini
-    echo wgpath=!wgpath!>>wg-help_config.ini
-    echo confPath=!confPath!>>wg-help_config.ini
-    echo device=!device!>>wg-help_config.ini
+if not exist %~dp0wg-help_config.ini (
+    echo [Settings]>%~dp0wg-help_config.ini
+    echo wgpath=!wgpath!>>%~dp0wg-help_config.ini
+    echo confPath=!confPath!>>%~dp0wg-help_config.ini
+    echo device=!device!>>%~dp0wg-help_config.ini
 )
 
 REM Function to read values from ini file
 :readini
-for /f "tokens=1,* delims==" %%a in (wg-help_config.ini) do (
+for /f "tokens=1,* delims==" %%a in (%~dp0wg-help_config.ini) do (
     if /i "%%a"=="wgpath" set "wgpath=%%b"
     if /i "%%a"=="confPath" set "confPath=%%b"
     if /i "%%a"=="device" set "device=%%b"
@@ -40,6 +49,8 @@ echo  *   (c) 2023 by suuhm     *
 echo  *                         *
 echo  *  WireGuard Control Menu *
 echo  *  ---------------------- *
+REM DEBUGGING:
+REM echo !wgpath! - !confPath!
 echo  ***************************
 echo\
 echo 1. Start tunnel
