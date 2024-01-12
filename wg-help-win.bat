@@ -11,7 +11,7 @@ REM -----------------------
 net session >nul 2>&1
 if not %errorlevel% == 0 (
     echo [!!] You need to run this script /w admin rights.
-    echo exit - %~dp0wg-help_config.ini 
+    echo exit now.
     pause
     exit /b
 )
